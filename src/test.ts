@@ -2,22 +2,28 @@ function add(stringInput : string) : Number {
     if (stringInput.length === 0) {
         return 0;
     } else {
+        const delimiters = [",", "\n"]
+
+        let equation = stringInput;
         if (stringInput.startsWith("//")) {
             const newDelimiter = stringInput.charAt(2);
-            const actualStringInput = stringInput.substr(4, stringInput.length - 4);
-
-            return actualStringInput.split(',')
-                .flatMap((splittedString : string) => splittedString.split(newDelimiter))
-                .flatMap((splittedString : string) => splittedString.split('\n'))
-                .map((splittedString : string) => parseInt(splittedString))
-                .reduce((previousValue : number, currentValue : number) => previousValue + currentValue, 0);
+            equation = stringInput.substr(4, stringInput.length - 4);
+            delimiters.push(newDelimiter);
         }
 
-        return stringInput.split(',')
-            .flatMap((splittedString : string) => splittedString.split('\n'))
+        return splitByDelimiters([equation], delimiters)
             .map((splittedString : string) => parseInt(splittedString))
             .reduce((previousValue : number, currentValue : number) => previousValue + currentValue, 0);
     }
+}
+
+function splitByDelimiters(splittableNumberStrings : string[], delimiters : string[]) : string[] {
+    return delimiters
+        .reduce((splittedNumberStrings : string[], currentDelimiter : string) => splitByDelimiter(splittedNumberStrings, currentDelimiter), splittableNumberStrings);
+}
+
+function splitByDelimiter(splittableNumberStrings : string[], delimiter : string) : string[] {
+    return splittableNumberStrings.flatMap((splittedString : string) => splittedString.split(delimiter));
 }
 
 test("Adds nothing; Returns 0", function () {
