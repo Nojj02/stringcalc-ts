@@ -48,7 +48,14 @@ function add(stringInput: string): Either<Error, Number> {
         if (numbers.some(number => number < 0)) {
             return Left(new Error("No negatives allowed"));
         }
-        const sum = numbers.reduce((previousValue: number, currentValue: number) => previousValue + currentValue, 0);
+        
+        const sum = 
+            numbers.reduce((previousValue: number, currentValue: number) => {
+                if (currentValue > 1000) {
+                    return previousValue;
+                }
+                return previousValue + currentValue
+            }, 0);
         return Right(sum);
     }
 }
@@ -108,4 +115,9 @@ test("No negatives allowed", function () {
     const result = add("//;\n1;-2");
     expect(isLeft(result)).toBeTruthy();
     expect((result.value as Error).message).toBe('No negatives allowed');
+});
+
+test("Greater than 1000 is ignored", function () {
+    const result = add("2,1001");
+    expect(result.value).toBe(2);
 });
