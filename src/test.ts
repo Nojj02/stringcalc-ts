@@ -36,9 +36,18 @@ function add(stringInput: string): Either<Error, Number> {
 
         let equation = stringInput;
         if (stringInput.startsWith("//")) {
-            const newDelimiter = stringInput.charAt(2);
-            equation = stringInput.substr(4, stringInput.length - 4);
-            delimiters.push(newDelimiter);
+            const firstNewlineIndex = stringInput.indexOf('\n');
+
+            const delimiterSection = stringInput.substr(2, firstNewlineIndex - 1);
+            if (delimiterSection.length === 1) {
+                delimiters.push(delimiterSection);
+            } else {
+                // string outer brackets
+                const strippedDelimiterSection = delimiterSection.substring(1, delimiterSection.length - 2);
+                strippedDelimiterSection.split('][').map(delimiter => delimiters.push(delimiter));
+            }
+
+            equation = stringInput.substr(firstNewlineIndex + 1, stringInput.length - firstNewlineIndex + 1);
         }
 
         const numbers =
@@ -48,7 +57,7 @@ function add(stringInput: string): Either<Error, Number> {
         if (numbers.some(number => number < 0)) {
             return Left(new Error("No negatives allowed"));
         }
-        
+
         const sum = 
             numbers.reduce((previousValue: number, currentValue: number) => {
                 if (currentValue > 1000) {
@@ -66,7 +75,8 @@ function splitByDelimiters(splittableNumberStrings: string[], delimiters: string
 }
 
 function splitByDelimiter(splittableNumberStrings: string[], delimiter: string): string[] {
-    return splittableNumberStrings.flatMap((splittedString: string) => splittedString.split(delimiter));
+    const newDelimiter = delimiter.replace(new RegExp('[*]', 'g'), '[*]');
+    return splittableNumberStrings.flatMap((splittedString: string) => splittedString.split(new RegExp(`${newDelimiter}`, 'g')));
 }
 
 test("Adds nothing; Returns 0", function () {
@@ -120,4 +130,19 @@ test("No negatives allowed", function () {
 test("Greater than 1000 is ignored", function () {
     const result = add("2,1001");
     expect(result.value).toBe(2);
+});
+
+test("Long delimiters", function () {
+    const result = add("//[***]\n1***2***3");
+    expect(result.value).toBe(6);
+});
+
+test("Multiple delimiters", function () {
+    const result = add("//[*][%]\n1%2*3");
+    expect(result.value).toBe(6);
+});
+
+test("Multiple delimiters w/ long", function () {
+    const result = add("//[***][%]\n1%2***3");
+    expect(result.value).toBe(6);
 });
