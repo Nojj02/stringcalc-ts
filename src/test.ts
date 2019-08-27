@@ -2,13 +2,21 @@ function add(stringInput : string) : Number {
     if (stringInput.length === 0) {
         return 0;
     } else {
-        const sum = 
-            stringInput.split(',')
-                .flatMap(splittedString  => splittedString.split('\n'))
-                .map(splittedString => parseInt(splittedString))
-                .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+        if (stringInput.startsWith("//")) {
+            const newDelimiter = stringInput.charAt(2);
+            const actualStringInput = stringInput.substr(4, stringInput.length - 4);
 
-        return sum;
+            return actualStringInput.split(',')
+                .flatMap((splittedString : string) => splittedString.split(newDelimiter))
+                .flatMap((splittedString : string) => splittedString.split('\n'))
+                .map((splittedString : string) => parseInt(splittedString))
+                .reduce((previousValue : number, currentValue : number) => previousValue + currentValue, 0);
+        }
+
+        return stringInput.split(',')
+            .flatMap((splittedString : string) => splittedString.split('\n'))
+            .map((splittedString : string) => parseInt(splittedString))
+            .reduce((previousValue : number, currentValue : number) => previousValue + currentValue, 0);
     }
 }
 
@@ -40,4 +48,9 @@ test("Adds three numbers; Returns sum", function () {
 test("Handle newlines between numbers", function() {
     const result = add("1\n2,3");
     expect(result).toBe(6);
+});
+
+test("Support different delimiters", function() {
+    const result = add("//;\n1;2");
+    expect(result).toBe(3);
 });
