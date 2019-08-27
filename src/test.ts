@@ -2,11 +2,11 @@ function add(stringInput : string) : Number {
     if (stringInput.length === 0) {
         return 0;
     } else {
-        const split = stringInput.split(',');
-        let sum = 0;
-        for (const value of split) {
-            sum += parseInt(value);
-        }
+        const sum = 
+            stringInput.split(',')
+                .flatMap(splittedString  => splittedString.split('\n'))
+                .map(splittedString => parseInt(splittedString))
+                .reduce((previousValue, currentValue) => previousValue + currentValue, 0);
 
         return sum;
     }
@@ -35,4 +35,9 @@ test("Adds two numbers; Returns sum", function () {
 test("Adds three numbers; Returns sum", function () {
     const result = add("1,2,3,4,5");
     expect(result).toBe(15);
+});
+
+test("Handle newlines between numbers", function() {
+    const result = add("1\n2,3");
+    expect(result).toBe(6);
 });
